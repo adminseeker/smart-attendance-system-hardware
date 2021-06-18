@@ -119,6 +119,7 @@ try:
 			GPIO.output(red,GPIO.HIGH)
 			GPIO.output(buzz,GPIO.LOW)
 			GPIO.output(green,GPIO.LOW)
+			GPIO.output(blue,GPIO.LOW)
 			GPIO.output(yellow,GPIO.LOW)
 			client1.connect(broker,port)
 			id, output = reader.read()
