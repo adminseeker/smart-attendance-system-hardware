@@ -3,6 +3,7 @@
 import pymongo
 from bson.objectid import ObjectId
 from datetime import datetime
+import arrow
 
 
 mongo_url=""
@@ -77,10 +78,34 @@ def verify_access_id(access_id):
 def mark_attendance(access_id,timing,curr_time,valid,user):
     if valid:
         if valid=="student":
-            x=StudentAttendances.find_one_and_update({"student":user['_id'],"timing":timing['_id']},{"$set":{"student":user['_id'],"timing":timing['_id'],"class":timing['class']['_id'],"lastUpdated":curr_time}},upsert=True)
+            try:
+                start_time=timing['start_time'].time()
+                end_time=timing['end_time'].time()
+                curr_date=curr_time.date()
+                start_datetime = datetime.combine(curr_date,start_time)
+                end_datetime = datetime.combine(curr_date,end_time)
+                print(start_datetime," ",end_datetime)
+                y=StudentAttendances.find({"student":user['_id'],"lastUpdated":{"$gte":start_datetime,"$lt":end_datetime}})[0]
+                print("found already"," from db")
+            except Exception as e:
+                print(e)
+                x=StudentAttendances.insert_one({"student":user['_id'],"timing":timing['_id'],"class":timing['class']['_id'],"lastUpdated":curr_time})
+                print("Added new entry"," from db")
             return True
         elif valid=="teacher":
-            x=TeacherAttendances.find_one_and_update({"teacher":user['_id'],"timing":timing['_id']},{"$set":{"teacher":user['_id'],"timing":timing['_id'],"class":timing['class']['_id'],"lastUpdated":curr_time}},upsert=True)
+            try:
+                start_time=timing['start_time'].time()
+                end_time=timing['end_time'].time()
+                curr_date=curr_time.date()
+                start_datetime = datetime.combine(curr_date,start_time)
+                end_datetime = datetime.combine(curr_date,end_time)
+                print(start_datetime," ",end_datetime)
+                y=TeacherAttendances.find({"teacher":user['_id'],"lastUpdated":{"$gte":start_datetime,"$lt":end_datetime}})[0]
+                print("found already"," from db")
+            except Exception as e:
+                print(e)
+                x=TeacherAttendances.insert_one({"teacher":user['_id'],"timing":timing['_id'],"class":timing['class']['_id'],"lastUpdated":curr_time})
+                print("Added new entry"," from db")
             return True
         elif valid=="admin":
             print(curr_time)
@@ -88,3 +113,5 @@ def mark_attendance(access_id,timing,curr_time,valid,user):
             return "admin"
     else:
         return False
+
+        # ,"lastUpdated":{"$gte":timing['start_time'].time().isoformat(),"$lt":timing['end_time'].time().isoformat()}
