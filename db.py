@@ -54,15 +54,28 @@ def get_admin_access_ids():
         access_ids.append(admin['admin_access_id'])
     return access_ids
      
-def verify_access_id(access_id):
+def verify_access_id(access_id,timing):
     try:
         student = Students.find({"access_id":access_id})[0]
-        return "student", student
+        print(student['_id'])
+        found=False
+        for i in timing['class']['students']:
+            print(i['student'],student['_id'])
+            if i['student']== student['_id']:
+                found=True
+                return "student", student
     except:
         pass
     try:
         teacher = Teachers.find({"access_id":access_id})[0]
-        return "teacher",teacher
+        # print(teacher)
+        print(timing)
+        print(timing['class']['teacher'],teacher['_id'])
+        if timing['class']['teacher']==teacher['_id']:
+            found=True
+            return "teacher",teacher
+        
+        
     except:
         pass
     try:
@@ -105,6 +118,10 @@ def mark_attendance(access_id,timing,curr_time,valid,user):
             except Exception as e:
                 print(e)
                 x=TeacherAttendances.insert_one({"teacher":user['_id'],"timing":timing['_id'],"class":timing['class']['_id'],"lastUpdated":curr_time})
+                # print(1)
+                y=Classes.find_one_and_update({"_id":timing['class']['_id']},{"$inc":{"total_classes":1}})
+                print("classes",y)
+                # print(2)
                 print("Added new entry"," from db")
             return True
         elif valid=="admin":

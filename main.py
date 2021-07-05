@@ -135,7 +135,7 @@ try:
 				room_id,reset_id,admin_access_ids,timings = reset_mode()
 				continue
 			current_timing,curr_time=get_current_timing(timings)
-			valid,user=db.verify_access_id(id)
+			valid,user=db.verify_access_id(id,current_timing)
 			if current_timing or valid=="admin":
 				GPIO.output(yellow,GPIO.LOW)
 				valid=db.mark_attendance(id,current_timing,curr_time,valid,user)
