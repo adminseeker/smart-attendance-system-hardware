@@ -1,0 +1,23 @@
+#This is to run the script every day at 6:30 PM
+
+crontab -e
+
+choose editor
+
+30 18 * * * /home/pi/smart-attendance-system-hardware/mailer.py
+
+add the above line at the last in crontab
+
+sudo service cron restart
+
+#This is to start the rfid scanner at boot automatically.
+
+crontab -e
+
+choose editor
+
+@reboot /home/pi/smart-attendance-system-hardware/main.py
+
+add the above line at the last in crontab
+
+sudo service cron restart

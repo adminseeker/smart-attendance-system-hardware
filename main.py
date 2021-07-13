@@ -41,28 +41,34 @@ def on_message(client, userdata, message):
 
 def get_room_id():
 	room_id=""
-	with open("roomID","r") as file:
+	with open("/home/pi/smart-attendance-system-hardware/roomID","r") as file:
 		room_id=file.readlines()[0].split("\n")[0]
 		file.close()
 	return room_id
 
 def get_reset_id():
 	reset_id=""
-	with open("resetID","r") as file:
+	with open("/home/pi/smart-attendance-system-hardware/resetID","r") as file:
 		reset_id=file.readlines()[0].split("\n")[0]
 		file.close()
 	return reset_id
 
 def reset_mode():
-	GPIO.output(red,GPIO.HIGH)
-	GPIO.output(green,GPIO.HIGH)
-	room_id=get_room_id()
-	reset_id=get_reset_id()
-	admin_access_ids=db.get_admin_access_ids()
-	timings=db.get_timings(room_id)
-	GPIO.output(red,GPIO.LOW)
-	GPIO.output(green,GPIO.LOW)
-	return room_id,reset_id,admin_access_ids,timings
+	try:
+		GPIO.output(red,GPIO.HIGH)
+		GPIO.output(green,GPIO.HIGH)
+		room_id=get_room_id()
+		reset_id=get_reset_id()
+		admin_access_ids=db.get_admin_access_ids()
+		timings=db.get_timings(room_id)
+		GPIO.output(red,GPIO.LOW)
+		GPIO.output(green,GPIO.LOW)
+		return room_id,reset_id,admin_access_ids,timings
+	except:
+		print("failed to start! Check room id...")
+		print("restarting in 5 seconds...")
+		time.sleep(5)
+		reset_mode()
 
 def admin_mode():
 	GPIO.output(blue,GPIO.HIGH)
@@ -102,6 +108,7 @@ def admin_mode():
 reader = SimpleMFRC522()
 
 room_id,reset_id,admin_access_ids,timings = reset_mode()
+	
 
 
 def get_current_timing(timings):
@@ -148,7 +155,8 @@ try:
 				else:
 					GPIO.output(red,GPIO.HIGH)
 					GPIO.output(buzz,GPIO.HIGH)
-					GPIO.output(green,GPIO.LOW)					
+					GPIO.output(green,GPIO.LOW)
+					time.sleep(1)					
 			else:
 				GPIO.output(buzz,GPIO.HIGH)
 				GPIO.output(yellow,GPIO.HIGH)

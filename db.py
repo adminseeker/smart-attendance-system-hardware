@@ -7,7 +7,7 @@ import arrow
 
 
 mongo_url=""
-with open("config.env", "r") as file:
+with open("/home/pi/smart-attendance-system-hardware/config.env", "r") as file:
     mongo_url=file.readlines()[0].split("\n")[0]
     file.close()
 
@@ -98,7 +98,7 @@ def mark_attendance(access_id,timing,curr_time,valid,user):
                 start_datetime = datetime.combine(curr_date,start_time)
                 end_datetime = datetime.combine(curr_date,end_time)
                 print(start_datetime," ",end_datetime)
-                y=StudentAttendances.find({"student":user['_id'],"lastUpdated":{"$gte":start_datetime,"$lt":end_datetime}})[0]
+                y=StudentAttendances.find({"student":user['_id'],"timing":timing['_id'],"lastUpdated":{"$gte":start_datetime,"$lt":end_datetime}})[0]
                 print("found already"," from db")
             except Exception as e:
                 print(e)
@@ -131,4 +131,34 @@ def mark_attendance(access_id,timing,curr_time,valid,user):
     else:
         return False
 
-        # ,"lastUpdated":{"$gte":timing['start_time'].time().isoformat(),"$lt":timing['end_time'].time().isoformat()}
+def get_absentees(timing):
+    try:
+        start_time=timing['start_time'].time()
+        end_time=timing['end_time'].time()
+        curr_date=datetime.now().date()
+        start_datetime = datetime.combine(curr_date,start_time)
+        end_datetime = datetime.combine(curr_date,end_time)
+        Class = timing['class']
+        students=Class['students']
+        student_present_ids=[]
+        student_absent_ids=[]
+        for entry in StudentAttendances.find({"timing":timing['_id'],"lastUpdated":{"$gte":start_datetime,"$lt":end_datetime}}):
+            student_present_ids.append(entry['student'])
+        for student in students:
+            if student['student'] not in student_present_ids:
+                student_absent_ids.append(student['student'])
+        print(student_absent_ids)
+        absent_emails=[]
+        student_uids=[]
+        for student in Students.find({"_id":{"$in":student_absent_ids}}):
+            student_uids.append(student['user'])
+        for user in Users.find({"_id":{"$in":student_uids}}):
+            absent_emails.append(user['email'])
+        #print(absent_emails)
+        return absent_emails
+    except Exception as e:
+        print(e)
+
+
+
+
